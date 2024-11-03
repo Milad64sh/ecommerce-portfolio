@@ -1,9 +1,13 @@
 'use strict';
-const { Model, Sequelize } = require('sequelize');
+const { Sequelize } = require('sequelize');
 const bcrypt = require('bcrypt');
 const sequelize = require('../../config/database');
 const AppError = require('../../utils/appError');
-module.exports = sequelize.define(
+const product = require('./product');
+const order = require('./order');
+const cart = require('./cart');
+
+const user = sequelize.define(
   'user',
   {
     id: {
@@ -110,3 +114,18 @@ module.exports = sequelize.define(
     modelName: 'user',
   }
 );
+
+user.hasOne(cart, { foreignKey: 'userId', as: 'cart' });
+cart.belongsTo(user, { foreignKey: 'userId', as: 'user' });
+
+user.hasMany(product, { foreignKey: 'createdBy' });
+product.belongsTo(user, {
+  foreignKey: 'createdBy',
+});
+
+user.hasMany(order, { foreignKey: 'userId', onDelete: 'CASCADE' });
+order.belongsTo(user, {
+  foreignKey: 'userId',
+});
+
+module.exports = user;
